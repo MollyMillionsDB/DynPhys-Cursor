@@ -1,0 +1,17 @@
+name: Check and package
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install test dependencies
+        run: sudo apt-get update && sudo apt-get install -y gjs libglib2.0-bin
+      - name: Check and package
+        run: sh scripts/package.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dynphys-cursor
+          path: dist/*.zip

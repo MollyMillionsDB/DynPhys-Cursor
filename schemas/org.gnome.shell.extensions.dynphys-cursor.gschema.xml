@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.dynphys-cursor" path="/org/gnome/shell/extensions/dynphys-cursor/">
+    <key name="active" type="b"><default>true</default><summary>Enable cursor physics</summary></key>
+    <key name="pause-fullscreen" type="b"><default>true</default><summary>Pause for focused fullscreen windows</summary></key>
+    <key name="pause-overview" type="b"><default>true</default><summary>Pause in Overview</summary></key>
+    <key name="toggle-shortcut" type="as"><default>['&lt;Super&gt;&lt;Alt&gt;d']</default><summary>Pause or resume shortcut</summary></key>
+    <key name="mode" type="s"><choices><choice value="rotate"/><choice value="tilt"/></choices><default>'rotate'</default><summary>Physics mode</summary></key>
+    <key name="sensitivity" type="d"><range min="0" max="4"/><default>1.0</default><summary>Motion sensitivity</summary></key>
+    <key name="spring" type="d"><range min="10" max="800"/><default>180.0</default><summary>Return spring strength</summary></key>
+    <key name="damping" type="d"><range min="2" max="80"/><default>22.0</default><summary>Angular damping</summary></key>
+    <key name="length" type="d"><range min="10" max="300"/><default>70.0</default><summary>Drag length in logical pixels</summary></key>
+    <key name="smoothing" type="d"><range min="0" max="200"/><default>35.0</default><summary>Velocity smoothing in milliseconds</summary></key>
+    <key name="max-angle" type="d"><range min="0" max="180"/><default>100.0</default><summary>Maximum rotation in degrees</summary></key>
+    <key name="rest-angle" type="d"><range min="-180" max="180"/><default>45.0</default><summary>Resting cursor body direction in degrees</summary></key>
+    <key name="tilt" type="d"><range min="0" max="0.15"/><default>0.035</default><summary>Tilt strength</summary></key>
+    <key name="stretch" type="d"><range min="0" max="0.5"/><default>0.12</default><summary>Stretch strength</summary></key>
+  </schema>
+</schemalist>
