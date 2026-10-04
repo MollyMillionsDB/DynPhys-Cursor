@@ -5,4 +5,5 @@ glib-compile-schemas --strict schemas
 gjs -m tests/physics.test.js
 gjs -m tests/lease.test.js
 gjs -m tests/config.test.js
+gjs -m tests/compatibility.test.js
 python3 scripts/package.py

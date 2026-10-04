@@ -9,14 +9,14 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {CursorContent} from './cursorContent.js';
 import {CursorPhysics} from './physics.js';
 import {CursorLease} from './cursorLease.js';
+import {assertWaylandSession} from './compatibility.js';
 
 export default class DynPhysCursor extends Extension {
     enable() {
         this._connections = [];
         this._failed = false;
         try {
-            if (!Meta.is_wayland_compositor())
-                throw new Error('This prototype requires a GNOME Wayland session.');
+            assertWaylandSession(Meta);
             this._settings = this.getSettings();
             this._a11y = new Gio.Settings({schema_id: 'org.gnome.desktop.a11y.applications'});
             this._tracker = global.backend.get_cursor_tracker();

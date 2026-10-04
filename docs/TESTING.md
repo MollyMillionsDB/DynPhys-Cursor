@@ -15,6 +15,12 @@ Run `sh scripts/package.sh` from the repository. It checks:
 
 Initial checks passed on 2026-10-04 with GJS 1.88.0. Real GNOME 50.1 GI method availability was inspected. An isolated headless Shell test was attempted, but this execution environment rejected the private D-Bus socket (`Operation not permitted`) before Shell started. **No desktop rendering, preferences interaction, latency, screen capture or visual QA result is claimed.** CI status should be checked separately on GitHub.
 
+## Version 2 startup regression
+
+On 2026-10-04, a GNOME 50 desktop reported `TypeError: (intermediate value).is_wayland_compositor is not a function` during enable. Version 1 called a removed API before creating the cursor actor. The initial API inspection missed this startup query.
+
+Version 2 checks whether the legacy query exists before calling it. GNOME 50 removed the X11 backend, so newer supported versions do not need that query. A regression test covers its absence, legacy Wayland acceptance and legacy X11 rejection. The corrected helper also passed with the actual installed GNOME 50 Meta namespace. Successful desktop rendering still requires user retesting.
+
 ## First desktop acceptance pass
 
 Record `gnome-shell --version`, session type (`echo "$XDG_SESSION_TYPE"`), commit (`git rev-parse --short HEAD`), cursor theme/size and each monitor's scale/refresh rate. Start with only this cursor-related extension enabled and defaults restored.

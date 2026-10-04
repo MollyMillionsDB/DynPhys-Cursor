@@ -6,7 +6,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 root = Path(__file__).resolve().parent.parent
 metadata = json.loads((root / 'metadata.json').read_text())
 files = ['metadata.json', 'extension.js', 'prefs.js', 'physics.js',
-         'cursorContent.js', 'cursorLease.js', 'settings.js', 'LICENSE',
+         'compatibility.js', 'cursorContent.js', 'cursorLease.js', 'settings.js', 'LICENSE',
          'schemas/org.gnome.shell.extensions.dynphys-cursor.gschema.xml',
          'schemas/gschemas.compiled']
 output = root / 'dist' / f'{metadata["uuid"]}.shell-extension.zip'

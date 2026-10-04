@@ -20,6 +20,8 @@ The extension runs only in a user session or a mode inheriting user, allowing Ub
 
 Primary development target: GNOME 50. The installed development environment has GNOME Shell 50.1/GJS 1.88.0. GI inspection confirmed the visibility, seat, content and timeline API entry points. This does not substitute for running a compositor session.
 
+GNOME 50 removed the X11 backend and `Meta.is_wayland_compositor()`. The startup check calls this legacy query only when it exists; supported newer Shell versions are Wayland-only. See the [GNOME 50 release notes](https://github.com/GNOME/mutter/blob/gnome-50/NEWS). Version 2 corrects the unconditional call present in version 1.
+
 GNOME 49 and upstream 51 have the required inhibition API. GNOME 48 uses `set_pointer_visible()` instead, and is intentionally excluded to avoid conflating visibility ownership models. Metadata enables 49/50/51 for testing; 49 and 51 remain provisional. GNOME releases can change private Shell APIs even when introspected Mutter methods remain stable.
 
 Sources checked on 2026-10-04:
