@@ -10,11 +10,17 @@ import {CursorContent} from './cursorContent.js';
 import {CursorPhysics} from './physics.js';
 import {CursorLease} from './cursorLease.js';
 import {assertWaylandSession} from './compatibility.js';
+import {ArrowApproval, matchesArrow} from './arrowIdentity.js';
+import {loadThemeArrows} from './cursorTheme.js';
+import {readCursorPixels} from './cursorReader.js';
 
 export default class DynPhysCursor extends Extension {
     enable() {
         this._connections = [];
         this._failed = false;
+        this._visibilityChange = false;
+        this._candidate = null;
+        this._arrowApproval = new ArrowApproval();
         try {
             assertWaylandSession(Meta);
             this._settings = this.getSettings();
@@ -33,6 +39,7 @@ export default class DynPhysCursor extends Extension {
                     this._touch = false;
                 return Clutter.EVENT_PROPAGATE;
             });
+            this._arrows = loadThemeArrows(Meta.prefs_get_cursor_theme());
             this._physics = new CursorPhysics();
             this._content = new CursorContent(error => this._fail(error));
             this._actor = new Clutter.Actor({reactive: false, visible: false,
@@ -40,7 +47,14 @@ export default class DynPhysCursor extends Extension {
             // A stage child stays above Shell UI without intercepting input.
             global.stage.add_child(this._actor);
             this._connect(this._settings, 'changed', () => this._configure());
-            this._connect(this._tracker, 'cursor-changed', () => { this._dirty = true; });
+            this._connect(this._tracker, 'cursor-changed', () => {
+                if (!this._visibilityChange)
+                    this._invalidateCursor();
+            });
+            this._connect(this._tracker, 'cursor-prefs-changed', () => {
+                this._invalidateCursor();
+                this._arrows = loadThemeArrows(Meta.prefs_get_cursor_theme());
+            });
             this._configure();
             Main.wm.addKeybinding('toggle-shortcut', this._settings,
                 Meta.KeyBindingFlags.NONE, Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
@@ -69,7 +83,9 @@ export default class DynPhysCursor extends Extension {
             length: s.get_double('length'), sensitivity: s.get_double('sensitivity'),
             smoothing: s.get_double('smoothing'), maxAngle: s.get_double('max-angle'),
             tilt: s.get_double('tilt'), stretch: s.get_double('stretch'),
-            restAngle: s.get_double('rest-angle')});
+            restAngle: s.get_double('rest-angle'),
+            rightwardLimit: s.get_double('rightward-limit'),
+            rightwardResponse: s.get_double('rightward-response')});
         this._physics.reset();
         this._dirty = true;
         this._lastTime = 0;
@@ -84,21 +100,34 @@ export default class DynPhysCursor extends Extension {
                 global.display.focus_window?.is_fullscreen());
     }
 
+    _invalidateCursor() {
+        this._arrowApproval?.invalidate();
+        this._candidate = null;
+        this._dirty = true;
+        this._release();
+    }
+
     _release() {
         this._actor?.hide();
-        this._lease?.release();
+        // Visibility transitions can synchronously emit cursor notifications.
+        // The next frame still checks texture, hotspot and scale afresh.
+        this._visibilityChange = true;
+        try { this._lease?.release(); } finally { this._visibilityChange = false; }
         this._lastTime = 0;
         this._physics?.reset();
     }
 
     _frame() {
         if (this._failed || this._shouldPause()) {
-            this._release();
+            if (this._candidate)
+                this._invalidateCursor();
+            else
+                this._release();
             return;
         }
         const texture = this._tracker.get_sprite();
         if (!texture || (!this._lease.held && !this._tracker.get_pointer_visible())) {
-            this._release();
+            this._invalidateCursor();
             return;
         }
         const [x, y] = global.get_pointer();
@@ -109,7 +138,30 @@ export default class DynPhysCursor extends Extension {
         const width = texture.get_width();
         const height = texture.get_height();
         if (!width || !height) {
+            this._invalidateCursor();
+            return;
+        }
+        const candidate = this._candidate;
+        if (!candidate || candidate.texture !== texture || candidate.width !== width ||
+            candidate.height !== height || candidate.hotX !== hx || candidate.hotY !== hy ||
+            candidate.scale !== scale) {
+            this._invalidateCursor();
+            this._candidate = {texture, width, height, hotX: hx, hotY: hy, scale};
+            // Give the native renderer a frame to realize the new cursor.
+            return;
+        }
+        if (this._arrowApproval.approved !== candidate) {
             this._release();
+            if (this._arrowApproval.rejected !== candidate && !this._arrowApproval.pending) {
+                const references = this._arrows;
+                if (!references.some(frame => frame.width === width && frame.height === height &&
+                    frame.hotX === hx && frame.hotY === hy)) {
+                    this._arrowApproval.rejected = candidate;
+                } else {
+                    this._arrowApproval.check(candidate, async () =>
+                        matchesArrow(references, await readCursorPixels(texture, hx, hy)));
+                }
+            }
             return;
         }
         if (this._dirty || texture !== this._texture || scale !== this._scale ||
@@ -135,7 +187,8 @@ export default class DynPhysCursor extends Extension {
         this._actor.set_scale(state.scaleX, state.scaleY);
         global.stage.set_child_above_sibling(this._actor, null);
         this._actor.show();
-        this._lease.acquire();
+        this._visibilityChange = true;
+        try { this._lease.acquire(); } finally { this._visibilityChange = false; }
     }
 
     _fail(error) {
@@ -155,6 +208,8 @@ export default class DynPhysCursor extends Extension {
     }
 
     disable() {
+        this._arrowApproval?.invalidate();
+        this._candidate = null;
         this._timeline?.stop();
         if (this._timeline && this._frameId)
             this._timeline.disconnect(this._frameId);
@@ -181,5 +236,7 @@ export default class DynPhysCursor extends Extension {
         this._settings = null;
         this._a11y = null;
         this._physics = null;
+        this._arrows = null;
+        this._arrowApproval = null;
     }
 }

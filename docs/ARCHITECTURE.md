@@ -2,11 +2,15 @@
 
 ## Data path
 
-Each Clutter timeline frame samples `global.get_pointer()`. The pure physics module estimates smoothed velocity, applies drag torque or a tilt target, and integrates a damped return spring in substeps of at most 1/240 second. A gap over 100 ms or jump over 500 logical pixels resets state instead of injecting a large impulse. Rotation and stretch are bounded.
+Each Clutter timeline frame samples `global.get_pointer()`. The pure physics module estimates smoothed velocity, applies drag torque or a tilt target, and integrates a damped return spring in substeps of at most 1/240 second. A gap over 100 ms or jump over 500 logical pixels resets state instead of injecting a large impulse. Rotation and stretch are bounded. The rightward-driven side has a separate cap (35° by default, at most 45°) and response multiplier (0.45 by default). Leftward forcing is unchanged. The cap follows the sign convention of each mode and also bounds overshoot after stopping.
 
 A non-reactive stage actor displays the current Cogl texture via a `Clutter.Content` implementation. `CursorTracker.get_hot()` supplies the hotspot in texture coordinates; `get_scale()` supplies the texture-to-stage scale. The actor is placed at pointer minus scaled hotspot and pivots at hotspot divided by texture dimensions. Thus both rotation and local-axis stretch leave the hotspot anchored mathematically. Mixed-scale desktop behavior remains an integration test, not an established result.
 
-The actor is raised above Shell content each active frame. It never takes input focus or modifies pointer events. Texture references are used directly, without CPU pixel copies. `cursor-changed` invalidates the content, while each frame checks the current sprite/scale/hotspot. Missing sprites release replacement.
+The actor is raised above Shell content each active frame. It never takes input focus or modifies pointer events. The rendering actor uses the texture directly. Before replacement is allowed, the image and hotspot must match a raster `default` or `left_ptr` image from the active Xcursor theme (including declared inheritance). The Xcursor parser bounds file sizes, frame counts and dimensions. Alpha must match exactly; premultiplied RGB allows a one-unit rounding difference after PNG conversion. Transparent RGB is ignored. Size/hotspot alone never grant approval.
+
+`cursor-changed` immediately revokes approval and releases the native cursor, including when a client reuses the same texture object. The following frame lets native rendering realize the new sprite before classification. `Shell.Screenshot.composite_to_stream()` reads only the small cursor texture into an in-memory stream and returns its pixbuf; no screen pixels or files are involved. While the asynchronous read is pending, the native cursor remains visible. Generation checks discard stale results after shape changes or disable. Unmatched images and errors remain native. There is no readback in the steady-state animation loop.
+
+Notifications caused synchronously by our own visibility change are ignored; every frame still compares texture, dimensions, hotspot and scale. Theme preferences invalidate references and approval. Missing sprites release replacement.
 
 ## Lifecycle
 
@@ -18,7 +22,7 @@ The extension runs only in a user session or a mode inheriting user, allowing Ub
 
 ## API compatibility
 
-Primary development target: GNOME 50. The installed development environment has GNOME Shell 50.1/GJS 1.88.0. GI inspection confirmed the visibility, seat, content and timeline API entry points. This does not substitute for running a compositor session.
+Primary development target: GNOME 50. The installed development environment has GNOME Shell 50.1/GJS 1.88.0. GI inspection confirmed the visibility, seat, content and timeline API entry points. Version 3 additionally passed an isolated headless GNOME 50 session with real GPU cursor readback and shape transitions; this does not substitute for visual testing on physical monitors.
 
 GNOME 50 removed the X11 backend and `Meta.is_wayland_compositor()`. The startup check calls this legacy query only when it exists; supported newer Shell versions are Wayland-only. See the [GNOME 50 release notes](https://github.com/GNOME/mutter/blob/gnome-50/NEWS). Version 2 corrects the unconditional call present in version 1.
 
@@ -35,6 +39,6 @@ Sources checked on 2026-10-04:
 ## Next milestones
 
 1. Confirm a single correctly positioned cursor, reliable disable, shape changes and scaling on GNOME 50 Wayland.
-2. Tune spring/drag response based on desktop feedback; improve cursor-role handling if a reliable API becomes available.
+2. Retest the original chat-box cursor transitions and tune the asymmetric spring/drag response from desktop feedback.
 3. Measure frame latency and CPU/power impact; replace continuous animation with an event-driven wake/settle scheduler if feasible.
 4. Verify GNOME 51 in a real session before describing it as supported.

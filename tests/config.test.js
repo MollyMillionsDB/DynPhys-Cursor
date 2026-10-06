@@ -21,7 +21,7 @@ for (const [key, , , lower, upper] of CONTROLS) {
             throw new Error(`Schema range exceeds UI: ${key}`);
     }
 }
-for (const path of ['compatibility.js', 'extension.js', 'prefs.js', 'cursorContent.js', 'cursorLease.js', 'physics.js', 'settings.js']) {
+for (const path of ['arrowIdentity.js', 'cursorTheme.js', 'cursorReader.js', 'compatibility.js', 'extension.js', 'prefs.js', 'cursorContent.js', 'cursorLease.js', 'physics.js', 'settings.js']) {
     const [, bytes] = GLib.file_get_contents(`${root}/${path}`);
     Reflect.parse(new TextDecoder().decode(bytes), {target: 'module'});
 }

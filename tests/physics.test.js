@@ -53,7 +53,7 @@ test('pause gaps and warps reset without impulse', () => {
 test('tilt and disabled motion settings', () => {
     const p = new CursorPhysics({mode: 'tilt', stretch: 0});
     for (let i = 0; i < 120; i++) p.step(10, 0, 1 / 60);
-    near(p.result().angle, -21, 0.1, 'tilt equilibrium');
+    near(p.result().angle, -9.45, 0.1, 'tilt equilibrium');
     p.configure({sensitivity: 0, stretch: 0}); p.reset();
     for (let i = 0; i < 120; i++) p.step(20, 10, 1 / 60);
     near(p.result().angle, 0, 1e-10, 'zero sensitivity');
@@ -63,5 +63,27 @@ test('invalid samples leave state intact', () => {
     const p = new CursorPhysics();
     p.step(NaN, 0, 0.01); p.step(1, 1, 0); p.step(Infinity, 0, 0.01);
     near(p.result().angle, 0, 1e-10, 'invalid data');
+});
+test('rightward motion remains bounded through speed, stops and reversals', () => {
+    for (const mode of ['rotate', 'tilt']) {
+        const p = new CursorPhysics({mode, spring: 10, damping: 2, sensitivity: 4,
+            length: 10, tilt: 0.15, smoothing: 0, maxAngle: 180});
+        for (let i = 0; i < 3000; i++) {
+            const dx = i < 1000 ? 180 : i < 2000 ? 0 : -180;
+            const {angle} = p.step(dx, 0, 1 / 60);
+            assert(mode === 'rotate' ? angle <= 35.000001 : angle >= -35.000001,
+                'rightward-driven side exceeds its upright limit');
+        }
+    }
+});
+test('leftward equilibrium is unchanged by rightward settings', () => {
+    for (const mode of ['rotate', 'tilt']) {
+        const normal = new CursorPhysics({mode});
+        const muted = new CursorPhysics({mode, rightwardLimit: 0, rightwardResponse: 0});
+        for (let i = 0; i < 120; i++) {
+            normal.step(-10, 0, 1 / 60); muted.step(-10, 0, 1 / 60);
+        }
+        near(normal.result().angle, muted.result().angle, 1e-9, 'leftward response');
+    }
 });
 print(`${passed} tests passed`);

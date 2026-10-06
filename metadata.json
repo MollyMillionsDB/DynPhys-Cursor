@@ -3,7 +3,7 @@
   "name": "DynPhys Cursor",
   "description": "Experimental GNOME Wayland cursor physics: an anchored tip, spring rotation, tilt and stretch with live tuning.",
   "shell-version": ["49", "50", "51"],
-  "version": 2,
+  "version": 3,
   "url": "https://github.com/MollyMillionsDB/DynPhys-Cursor",
   "settings-schema": "org.gnome.shell.extensions.dynphys-cursor"
 }

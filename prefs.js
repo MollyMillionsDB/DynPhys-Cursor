@@ -12,7 +12,7 @@ export default class DynPhysPreferences extends ExtensionPreferences {
         const page = new Adw.PreferencesPage({title: 'Cursor physics', icon_name: 'input-mouse-symbolic'});
         window.add(page);
         const general = new Adw.PreferencesGroup({title: 'Behavior',
-            description: 'Experimental cursor replacement. Changes apply immediately. Super+Alt+D pauses or resumes.'});
+            description: 'Only recognized regular arrows receive physics. Other cursors stay native. Super+Alt+D pauses or resumes.'});
         page.add(general);
         for (const [key, title, subtitle] of [
             ['active', 'Enable physics', 'Pause to restore the normal cursor'],
