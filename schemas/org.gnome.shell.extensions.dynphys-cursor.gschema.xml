@@ -4,7 +4,10 @@
     <key name="active" type="b"><default>true</default><summary>Enable cursor physics</summary></key>
     <key name="pause-fullscreen" type="b"><default>true</default><summary>Pause for focused fullscreen windows</summary></key>
     <key name="pause-overview" type="b"><default>true</default><summary>Pause in Overview</summary></key>
-    <key name="toggle-shortcut" type="as"><default>['&lt;Super&gt;&lt;Alt&gt;d']</default><summary>Pause or resume shortcut</summary></key>
+    <key name="dynphys-cursor-toggle-shortcut" type="as"><default>['&lt;Super&gt;&lt;Alt&gt;d']</default><summary>Pause or resume shortcut</summary></key>
+    <!-- Retained to migrate existing per-user settings; no longer registered as a keybinding. -->
+    <key name="toggle-shortcut" type="as"><default>['&lt;Super&gt;&lt;Alt&gt;d']</default><summary>Deprecated legacy shortcut setting</summary></key>
+    <key name="shortcut-migration-complete" type="b"><default>false</default><summary>Whether the legacy shortcut setting has been migrated</summary></key>
     <key name="mode" type="s"><choices><choice value="rotate"/><choice value="tilt"/></choices><default>'rotate'</default><summary>Physics mode</summary></key>
     <key name="sensitivity" type="d"><range min="0" max="4"/><default>1.0</default><summary>Motion sensitivity</summary></key>
     <key name="spring" type="d"><range min="10" max="800"/><default>180.0</default><summary>Return spring strength</summary></key>
