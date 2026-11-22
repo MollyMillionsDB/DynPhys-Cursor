@@ -11,6 +11,7 @@ Run `sh scripts/package.sh` from the repository. It checks:
 - Tilt equilibrium and zero sensitivity/stretch.
 - Balanced inhibitor ownership over 100 pause/resume cycles, preservation of another owner, and unwind after partial acquisition failure.
 - Schema compilation, UI/schema range agreement, physics/schema default agreement and JavaScript module syntax.
+- Namespaced Mutter keybinding registration and one-time migration of a customized legacy GSettings shortcut without overwriting a value already set under the new key.
 - Rightward angle bounds through high speed, stop and reversal; unchanged leftward equilibrium.
 - Arrow pixel/hotspot matching, rejection of other glyphs sharing dimensions, malformed/truncated Xcursor input and stale asynchronous results.
 - ZIP creation using the explicit extension-file allowlist.

@@ -13,6 +13,7 @@ import {assertWaylandSession} from './compatibility.js';
 import {ArrowApproval, matchesArrow} from './arrowIdentity.js';
 import {loadThemeArrows} from './cursorTheme.js';
 import {readCursorPixels} from './cursorReader.js';
+import {migrateShortcutSetting, TOGGLE_SHORTCUT} from './settings.js';
 
 export default class DynPhysCursor extends Extension {
     enable() {
@@ -24,6 +25,7 @@ export default class DynPhysCursor extends Extension {
         try {
             assertWaylandSession(Meta);
             this._settings = this.getSettings();
+            migrateShortcutSetting(this._settings);
             this._a11y = new Gio.Settings({schema_id: 'org.gnome.desktop.a11y.applications'});
             this._tracker = global.backend.get_cursor_tracker();
             if (typeof this._tracker.inhibit_cursor_visibility !== 'function')
@@ -56,7 +58,7 @@ export default class DynPhysCursor extends Extension {
                 this._arrows = loadThemeArrows(Meta.prefs_get_cursor_theme());
             });
             this._configure();
-            Main.wm.addKeybinding('toggle-shortcut', this._settings,
+            Main.wm.addKeybinding(TOGGLE_SHORTCUT, this._settings,
                 Meta.KeyBindingFlags.NONE, Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
                 () => this._settings.set_boolean('active', !this._settings.get_boolean('active')));
             this._keybinding = true;
@@ -220,7 +222,7 @@ export default class DynPhysCursor extends Extension {
             this._errorIdle = 0;
         }
         if (this._keybinding) {
-            Main.wm.removeKeybinding('toggle-shortcut');
+            Main.wm.removeKeybinding(TOGGLE_SHORTCUT);
             this._keybinding = false;
         }
         for (const [object, id] of this._connections ?? [])

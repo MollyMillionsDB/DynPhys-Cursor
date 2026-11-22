@@ -53,11 +53,11 @@ Wayland cannot reload GNOME Shell with Alt+F2 → `r`. If preferences do not ope
 
 Start with defaults. For more wobble, reduce damping gradually. For quicker settling, increase the spring or damping; very high damping can slow the return. Set stretch to zero for rotation alone. Cursor body direction describes the artwork's tail direction, not a permanent visual rotation offset.
 
-GNOME magnification, lock/login modes and touch input temporarily suspend replacement. Mouse motion resumes it after touch. The shortcut is also configurable through GSettings; the preferences window shows the default shortcut, not a shortcut editor:
+GNOME magnification, lock/login modes and touch input temporarily suspend replacement. Mouse motion resumes it after touch. The shortcut is also configurable through GSettings; the preferences window shows the default shortcut, not a shortcut editor. Existing custom values under the former `toggle-shortcut` key are copied once to the new key at first enable, provided the new key still has its default value:
 
 ```sh
 gsettings --schemadir "$HOME/.local/share/gnome-shell/extensions/dynphys-cursor@mollymillionsdb.github.io/schemas" \
-  set org.gnome.shell.extensions.dynphys-cursor toggle-shortcut "['<Super><Alt>d']"
+  set org.gnome.shell.extensions.dynphys-cursor dynphys-cursor-toggle-shortcut "['<Super><Alt>d']"
 ```
 
 ## Update, recover, remove

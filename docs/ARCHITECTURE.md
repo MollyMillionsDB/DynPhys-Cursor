@@ -14,7 +14,7 @@ Notifications caused synchronously by our own visibility change are ignored; eve
 
 ## Lifecycle
 
-Enable constructs settings, content, actor, signal connections, shortcut and animation timeline. Visibility is acquired only after a valid sprite is positioned. `CursorLease` owns one seat-unfocus inhibitor and one cursor-visibility inhibitor, mirroring the ownership pattern in GNOME's magnifier; acquisition failures unwind the acquired portion. Releasing twice is harmless. Other components' inhibitor counts are preserved.
+Enable constructs settings, content, actor, signal connections, shortcut and animation timeline. The Mutter binding is named `dynphys-cursor-toggle-shortcut`, matching its GSettings key to avoid collisions with other extensions that share Mutter's process-wide binding namespace. A one-time migration copies a customized legacy `toggle-shortcut` value when the new key is still at its default. Visibility is acquired only after a valid sprite is positioned. `CursorLease` owns one seat-unfocus inhibitor and one cursor-visibility inhibitor, mirroring the ownership pattern in GNOME's magnifier; acquisition failures unwind the acquired portion. Releasing twice is harmless. Other components' inhibitor counts are preserved.
 
 Pausing hides the overlay and releases both inhibitors. Disable stops and disconnects the timeline, removes the shortcut and signal handlers, cancels pending error notifications, releases inhibitors and destroys the actor. An exception during a frame or paint callback stops the effect and restores native cursor visibility subject to other inhibitor owners. Failure does not automatically retry every frame; disable/re-enable explicitly to retry.
 
